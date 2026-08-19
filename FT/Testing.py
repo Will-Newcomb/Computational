@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import FFT as fft
+import FT.FFT as fft
 
 num_cycles = 4          
 points_per_cycle = 150
@@ -52,7 +52,7 @@ if new_Length!=total_points:
     extra_points=new_Length-total_points
     extra_cyccles=extra_points/total_points
     freq_axis = np.fft.fftfreq(new_Length, d=1/points_per_cycle)
-    
+
 plt.figure(figsize=(8, 4))
 plt.plot(freq_axis, my_fft)
 plt.title("MINE")
