@@ -60,3 +60,4 @@ plt.xlabel("Frequency (Cycles per unit time)")
 plt.ylabel("Magnitude")
 plt.grid(True)
 plt.show()
+#name change check
