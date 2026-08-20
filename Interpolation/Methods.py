@@ -1,4 +1,12 @@
-from numpy import linspace, concatenate
+import sys
+import os
+
+# Adds the parent directory to the system path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from numpy import linspace, concatenate, array
+import numpy as np
+import Solvers.algmethods as am
 
 def linear(data,x_axis):
     new_axis=[]
@@ -39,18 +47,39 @@ def Lagrange(data,x_axis):
 
 #need to get to chapeter 6 cant use chapter 5 differenation as does not guarentee continunity
 def spline(data,x_axis):
-    new_axis=[]
-    new_data=[]
-    for i in range(0, len(data)-1):
-        x=linspace(x_axis[i],x_axis[i+1],100)
-        a=(x_axis[i+1]-x)/(x_axis[i+1]-x_axis[i])
-        b=(x-x_axis[i])/(x_axis[i+1]-x_axis[i])
-        c=(1/6)*(a**3-a)(x_axis[i+1]-x_axis[i])**2
-        d=(1/6)*(b**3-b)(x_axis[i+1]-x_axis[i])**2
 
-        new_data.append(a*data[i]+b*data[i+1]+c*+d)
-        new_axis.append(x)
-    return concatenate(new_data),concatenate(new_axis)
+    size=len(x_axis)
+    extra_points=80
+    b_vec=np.zeros(size)
+    matrix=np.zeros((size,size))
+    f=[]
+    x_ax=[]
+
+    #inital conditions
+    matrix[0,0]=1
+    b_vec[0]=0
+    matrix[size-1,size-1]=1
+    b_vec[size-1]=0 
+
+
+    for i in range(1,len(x_axis)-1):
+        b_vec[i]=(((data[i+1]-data[i])/(x_axis[i+1]-x_axis[i]))-((data[i]-data[i-1])/(x_axis[i]-x_axis[i-1])))
+        matrix[i,i-1:i+2]=([x_axis[i+1]/6-x_axis[i]/6,x_axis[i+1]/3-x_axis[i-1]/3,x_axis[i]/6-x_axis[i-1]/6])
+
+    solution=am.LU_decomp_doo(matrix,b_vec)
+
+    for i in range(0,size-1):
+        x=linspace(x_axis[i],x_axis[i+1],extra_points)
+
+        A=((x_axis[i+1]-x)/(x_axis[i+1]-x_axis[i]))
+        B=((x-x_axis[i])/(x_axis[i+1]-x_axis[i]))
+        C=((1/6)*(A**3-A)*(x_axis[i+1]-x_axis[i])**2)
+        D=((1/6)*(B**3-B)*(x_axis[i+1]-x_axis[i])**2)
+
+        f.append(A*data[i]+B*data[i+1]+C*solution[i+1]+D*solution[i])
+        x_ax.append(x)
+    return np.concatenate(f),np.concatenate(x_ax)
+
 
 
     
