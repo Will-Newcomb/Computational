@@ -4,10 +4,22 @@ def linear(data,x_axis):
     new_axis=[]
     new_data=[]
     for i in range(0, len(data)-1):
-        x=linspace(x_axis[i],x_axis[i+1],100)
+        x=linspace(x_axis[i],x_axis[i+1],10)
         new_data.append((((x_axis[i+1]-x)*data[i]+(x-x_axis[i])*data[i+1])/(x_axis[i+1]-x_axis[i])))
         new_axis.append(x)
     return concatenate(new_data),concatenate(new_axis)
+
+
+def linear_vector(data,x_axis):
+    new_axis=[]
+    new_data=[]
+    start_points=x_axis[:-1]
+    end_points=x_axis[1:]      
+    start_data=data[:-1]
+    end_data=data[1:] 
+    x=linspace(start_points,end_points,10)
+    new_data=(((end_points-x)*start_data+(x-start_points)*end_data)/(end_points-start_points))
+    return new_data,x
 
 
 def Lagrange(data,x_axis):
@@ -25,7 +37,7 @@ def Lagrange(data,x_axis):
 
 
 
-#need to get to chapeter 6
+#need to get to chapeter 6 cant use chapter 5 differenation as does not guarentee continunity
 def spline(data,x_axis):
     new_axis=[]
     new_data=[]
