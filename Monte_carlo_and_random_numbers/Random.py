@@ -5,7 +5,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import Interpolation.Methods as md
 
-
+from scipy.integrate import cumulative_trapezoid
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -18,18 +18,11 @@ def congruential_gen(a,c,m,N):
         number_list = np.append(number_list, new_numbers)
     return number_list
 
-
-def Transformation():
-    return
-    #need to intergarte our PDF 
-    #then need to solve algebratic equation
-
-    #Might want to add other control functions after ive finished transformation method
-
-def Rejection(f,x_axis,bounds,N):
+#rejection moethod that interpolates instead of taking the nearest data value for more accurate results
+def Rejection(f,x_axis,N):
+    bounds=[min(x_axis),max(x_axis)]
     accepted_samples=np.array([])
-    max_func=np.max(f)+0.01
-
+    max_func=np.max(f)+1e-5
     while N>0:
         random_x = np.random.uniform(bounds[0], bounds[1], N)
         random_y = np.random.uniform(0, max_func, N)
@@ -46,21 +39,68 @@ def Rejection(f,x_axis,bounds,N):
 
     return accepted_samples
 
-num_cycles = 2
-points_per_cycle = 10
-total_points = num_cycles * points_per_cycle
-x_axis_fine=np.linspace(0, num_cycles, 5000, endpoint=False)
 
-x_axis = np.linspace(0, num_cycles, total_points, endpoint=False)
-data = 10 * np.exp(-2 * np.pi * x_axis)
+def Transformation(f,x_axis,N):
 
-hist=Rejection(data,x_axis, bounds=[min(x_axis),max(x_axis)], N= 100000)
-plt.hist(hist,x_axis_fine)
+    random_p = np.random.uniform(0,1,N)
+
+    step_size=x_axis[1]-x_axis[0]
+    #to avoid any completly 0 CDF values that arent the start
+    f_safe = f + 1e-5
+    cdf=np.append(np.array([0]),(cumulative_trapezoid(f_safe)*step_size))
+    #normalining 
+    cdf=cdf/cdf[-1]
+    values = md.spline(x_axis, cdf, random_p)
+
+    return values
+    #need to intergarte our PDF 
+    #then need to solve algebratic equation
+
+    #Might want to add other control functions after ive finished transformation method
+
+
+
+
+x_axis = np.linspace(-5, 5, 200)
+
+# Define a dictionary of different unnormalized shapes to test
+shapes = {
+    "Gaussian (Bell Curve)": np.exp(-0.5 * x_axis**2),
+    "Bimodal (Two Peaks)": np.exp(-0.5 * (x_axis - 2.5)**2) + 0.8 * np.exp(-0.5 * (x_axis + 2)**2),
+    "Oscillating Shape": np.sin(2 * x_axis)**2 * np.exp(-0.1 * x_axis**2),
+    "Triangular Shape": np.maximum(0, 1 - np.abs(x_axis / 3))
+}
+
+# Set up the plot grid
+fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+axes = axes.flatten()
+
+# Loop through each shape, calculate area, normalize, and sample
+for idx, (title, data) in enumerate(shapes.items()):
+    ax = axes[idx]
+    
+    # Calculate the area under the curve using the trapezoidal rule
+    area = np.trapezoid(data, x_axis)
+    
+    # Normalize the data to make it a true PDF
+    data_pdf = data / area
+    
+    # Run Rejection Sampling
+    N_samples = 100000
+    samples = Rejection(data_pdf, x_axis, N_samples)
+    
+    # Plot the histogram of the accepted samples
+    ax.hist(samples, bins=50, density=True, alpha=0.6, color='skyblue', edgecolor='black', label='Sampled Data (Hist)')
+    
+    # Plot the theoretical PDF points over it
+    ax.plot(x_axis, data_pdf, 'r--', lw=2, label='Target PDF (Normalized)')
+    
+    ax.set_title(title, fontsize=14, fontweight='bold')
+    ax.set_xlim([min(x_axis), max(x_axis)])
+    ax.legend()
+
+plt.tight_layout()
 plt.show()
-plt.scatter(x_axis,data)
-plt.show()
-
-
 
 
 def Monte_min(f,strat_bounds, end_bounds):

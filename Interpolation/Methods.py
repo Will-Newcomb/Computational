@@ -53,7 +53,7 @@ def Lagrange(data,x_axis):
 
 #need to get to chapeter 6 cant use chapter 5 differenation as does not guarentee continunity
 def spline(data,x_axis,specific_point= None):
-
+    varible=False
     size=len(x_axis)
     #creating the matrix and vector to solve
     b_vec=np.zeros(size)
@@ -68,10 +68,18 @@ def spline(data,x_axis,specific_point= None):
     matrix[size-1,size-1]=1
     b_vec[size-1]=0 
 
+    #checking for constant interval
+    left=x_axis[1:]
+    right=x_axis[:-1]
+    difference=left-right
+    if len(set(difference))!=1:
+        varible=True
+
+
     #creating the matrix and vector to solve
     for i in range(1,len(x_axis)-1):
         b_vec[i]=(((data[i+1]-data[i])/(x_axis[i+1]-x_axis[i]))-((data[i]-data[i-1])/(x_axis[i]-x_axis[i-1])))
-        matrix[i,i-1:i+2]=([x_axis[i+1]/6-x_axis[i]/6,x_axis[i+1]/3-x_axis[i-1]/3,x_axis[i]/6-x_axis[i-1]/6])
+        matrix[i,i-1:i+2]=([x_axis[i]/6-x_axis[i-1]/6,x_axis[i+1]/3-x_axis[i-1]/3,x_axis[i+1]/6-x_axis[i]/6])
 
     #solving the equations
     solution=am.LU_decomp_doo(matrix,b_vec)
@@ -89,6 +97,17 @@ def spline(data,x_axis,specific_point= None):
             f=np.append(f,A*data[i]+B*data[i+1]+C*solution[i+1]+D*solution[i])
             x_ax=np.append(x_ax,x)
         return f,x_ax
+
+    elif specific_point is not None and varible==True:
+        #have to use search sorted as no search algo
+        idx = np.int_( np.searchsorted(x_axis, specific_point)-1)
+        A=((x_axis[idx+1]-specific_point)/(x_axis[idx+1]-x_axis[idx]))
+        B=((specific_point-x_axis[idx])/(x_axis[idx+1]-x_axis[idx]))
+        C=((1/6)*(A**3-A)*(x_axis[idx+1]-x_axis[idx])**2)
+        D=((1/6)*(B**3-B)*(x_axis[idx+1]-x_axis[idx])**2)
+
+        f=A*data[idx]+B*data[idx+1]+C*solution[idx+1]+D*solution[idx]
+        return f        
     else:
         idx = np.int_(np.floor((specific_point - x_axis[0]) / (x_axis[1] - x_axis[0]))) 
         A=((x_axis[idx+1]-specific_point)/(x_axis[idx+1]-x_axis[idx]))
