@@ -68,11 +68,13 @@ shapes = {
     "Gaussian (Bell Curve)": np.exp(-0.5 * x_axis**2),
     "Bimodal (Two Peaks)": np.exp(-0.5 * (x_axis - 2.5)**2) + 0.8 * np.exp(-0.5 * (x_axis + 2)**2),
     "Oscillating Shape": np.sin(2 * x_axis)**2 * np.exp(-0.1 * x_axis**2),
-    "Triangular Shape": np.maximum(0, 1 - np.abs(x_axis / 3))
+    "Triangular Shape": np.maximum(0, 1 - np.abs(x_axis / 3)),
+    "sine shape": np.sin(2 * x_axis)+1
+
 }
 
 # Set up the plot grid
-fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+fig, axes = plt.subplots(3, 2, figsize=(14, 15))
 axes = axes.flatten()
 
 # Loop through each shape, calculate area, normalize, and sample
@@ -87,7 +89,7 @@ for idx, (title, data) in enumerate(shapes.items()):
     
     # Run Rejection Sampling
     N_samples = 100000
-    samples = Rejection(data_pdf, x_axis, N_samples)
+    samples = Transformation(data_pdf, x_axis, N_samples)
     
     # Plot the histogram of the accepted samples
     ax.hist(samples, bins=50, density=True, alpha=0.6, color='skyblue', edgecolor='black', label='Sampled Data (Hist)')
