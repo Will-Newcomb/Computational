@@ -6,13 +6,12 @@ import time
 
 start_time = time.time()
 
-num_cycles = 4
-points_per_cycle = 10
+num_cycles = 10
+points_per_cycle = 4
 total_points = num_cycles * points_per_cycle
 
 x_axis = np.linspace(0, num_cycles, total_points, endpoint=False)
 data = np.sin(2 * np.pi * x_axis)
-
 
 
 linear,new_x_axis=md.spline(data,x_axis)
